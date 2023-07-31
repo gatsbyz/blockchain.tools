@@ -1,0 +1,73 @@
+---
+# TODO separate this into a minimal / full config
+- name: Install common dev tools packages
+  ansible.builtin.apt:
+    pkg:
+      - apt-transport-https
+      - aria2
+      - ca-certificates
+      - curl
+      - emacs
+      - fio
+      - gcc
+      - gdb
+      - git
+      - gnupg
+      - hdparm
+      - htop
+      - inxi
+      - iperf
+      - jq
+      - lmbench
+      - lsof
+      - make
+      - ncdu
+      - net-tools
+      - numactl
+      - openssl
+      - pandoc
+      - pv
+      - python3-boto3
+      - python3-pip
+      - python3-setuptools
+      - rlwrap
+      - sbcl
+      - sharutils
+      - software-properties-common
+      - strace
+      - sysbench
+      - sysstat
+      - tcpdump
+      - traceroute
+      - virtualenv
+      - wget
+      - zile
+      - zstd
+    state: present
+    update_cache: true
+
+- name: systemwide emacs setup
+  block:
+    - name: Emacs with no window by default
+      ansible.builtin.lineinfile:
+        path: /etc/bash.bashrc
+        line: alias emacs="emacs -nw"
+
+    - name: Set emacs as default editor
+      ansible.builtin.lineinfile:
+        path: /etc/bash.bashrc
+        line: export EDITOR=emacs
+
+- name: Setup liquid prompt
+  block:
+    - name: Clone liquidprompt
+      ansible.builtin.git:
+        repo: https://github.com/nojhan/liquidprompt.git
+        dest: /usr/local/share/liquidprompt
+        recursive: true
+
+    - name: Use liquid prompt for current user
+      ansible.builtin.lineinfile:
+        path: "/etc/bash.bashrc"
+        line: "[[ $- = *i* ]] && source /usr/local/share/liquidprompt/liquidprompt"
+
