@@ -1,0 +1,5 @@
+---
+bcc_version: v0.25.0
+bpf_trace_version: v0.16.0
+flamegraph_version: d9fcc272b6a08c3e3e5b7919040f0ab5f8952d65
+include_bpftrace: false

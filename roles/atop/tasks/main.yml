@@ -1,6 +1,7 @@
 ---
 
 - name: Install necessary atop packages
+  when: ansible_distribution == "Ubuntu"
   ansible.builtin.apt:
     pkg:
       - gcc-12

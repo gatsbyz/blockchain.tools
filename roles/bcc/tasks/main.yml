@@ -1,0 +1,124 @@
+---
+
+- name: Install packages needed for bcc and bpftrace
+  when: ansible_distribution == "Ubuntu"
+  tags:
+    - packages
+  ansible.builtin.apt:
+    pkg:
+      - asciidoctor
+      - binutils-dev
+      - bison
+      - build-essential
+      - checkinstall
+      - clang-12
+      - cmake
+      - flex
+      - g++
+      - git
+      - libbpf-dev
+      - libcereal-dev
+      - libclang-11-dev
+      - libclang-12-dev
+      - libedit-dev
+      - libelf-dev
+      - libfl-dev
+      - libgmock-dev
+      - libgtest-dev
+      - libllvm11
+      - libpcap-dev
+      - llvm-11-dev
+      - llvm-12-dev
+      - llvm-12-runtime
+      - python-is-python3
+      - python3-distutils
+      - systemtap-sdt-dev
+      - zlib1g-dev
+    state: present
+    update_cache: true
+
+- name: Install BCC
+  block:
+    - name: Download bcc
+      ansible.builtin.get_url:
+        url: https://github.com/iovisor/bcc/releases/download/{{ bcc_version }}/bcc-src-with-submodule.tar.gz
+        dest: /opt/bcc-src-with-submodule.tar.gz
+        mode: "0755"
+        force: false
+
+    - name: Extract bcc
+      ansible.builtin.unarchive:
+        src: /opt/bcc-src-with-submodule.tar.gz
+        dest: /opt
+        remote_src: true
+
+    - name: Create folder for bcc build
+      ansible.builtin.file:
+        path: /opt/bcc/build
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Setup BCC build
+      ansible.builtin.shell: cmake -DCMAKE_INSTALL_PREFIX=/usr -DPYTHON_CMD=python3 .. 2> cmake.err > cmake.out
+      args:
+        chdir: /opt/bcc/build
+        creates: /opt/bcc/cmake.out
+
+    - name: Compile bcc
+      ansible.builtin.shell: make 2> make.err > make.out
+      args:
+        chdir: /opt/bcc/build
+        creates: /opt/bcc/make.out
+
+    - name: Install bcc
+      ansible.builtin.shell: make install 2> makeinstall.err > makeinstall.out
+      args:
+        chdir: /opt/bcc/build
+        creates: /opt/bcc/makeinstall.out
+
+- name: Install BPF Trace
+  when: include_bpftrace
+  block:
+    - name: Clone bpftrace
+      ansible.builtin.git:
+        repo: https://github.com/iovisor/bpftrace
+        dest: /opt/bpftrace
+        version: "{{ bpf_trace_version }}"
+        recursive: true
+        force: true
+
+    - name: Create folder for bpftrace build
+      ansible.builtin.file:
+        path: /opt/bpftrace/build
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Setup bpftrace build
+      ansible.builtin.shell: cmake -DCMAKE_BUILD_TYPE=Release .. 2> cmake.err > cmake.out
+      args:
+        chdir: /opt/bpftrace/build
+        creates: /opt/bpftrace/cmake.out
+
+    - name: Compile bpftrace
+      ansible.builtin.shell: make -j8 2> make.err > make.out
+      args:
+        chdir: /opt/bpftrace/build
+        creates: /opt/bpftrace/make.out
+
+    - name: Install bpftrace
+      ansible.builtin.shell: make install 2> makeinstall.err > makeinstall.out
+      args:
+        chdir: /opt/bpftrace/build
+        creates: /opt/bpftrace/makeinstall.out
+
+- name: Clone flamegraphs
+  ansible.builtin.git:
+    repo: https://github.com/brendangregg/FlameGraph
+    dest: /opt/FlameGraph
+    version: "{{ flamegraph_version }}"
+    recursive: true
+    force: true
