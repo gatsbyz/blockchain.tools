@@ -1,0 +1,93 @@
+---
+
+- name: Install necessary atop packages
+  ansible.builtin.apt:
+    pkg:
+      - gcc-12
+    state: present
+    update_cache: true
+
+- name: Install netatop
+  when: netatop_enabled
+  block:
+    - name: Download netatop
+      ansible.builtin.get_url:
+        url: https://www.atoptool.nl/download/{{ netatop_version }}.tar.gz
+        dest: /opt/{{ netatop_version }}.tar.gz
+        mode: "0644"
+
+    - name: Extract netatop
+      ansible.builtin.unarchive:
+        src: /opt/{{ netatop_version }}.tar.gz
+        dest: /opt
+        remote_src: true
+        creates: /opt/{{ netatop_version }}
+
+    - name: Build netatop
+      ansible.builtin.shell: |
+        pushd /opt/{{ netatop_version }}
+        make
+        popd
+      args:
+        executable: /bin/bash
+        creates: /opt/{{ netatop_version }}/daemon/netatopd
+
+    - name: Install netatop
+      ansible.builtin.shell: |
+        pushd /opt/{{ netatop_version }}
+        make install
+        touch /opt/{{ netatop_version }}/.installed
+        popd
+      args:
+        executable: /bin/bash
+        creates: /opt/{{ netatop_version }}/.installed
+
+    - name: Enable and start netatop
+      ansible.builtin.systemd:
+        state: started
+        name: netatop
+        enabled: true
+        daemon_reload: true
+
+- name: Install atop
+  block:
+    - name: Download atop
+      ansible.builtin.get_url:
+        url: https://www.atoptool.nl/download/{{ atop_version }}.tar.gz
+        dest: /opt/{{ atop_version }}.tar.gz
+        mode: "0644"
+
+    - name: Extract atop
+      ansible.builtin.unarchive:
+        src: /opt/{{ atop_version }}.tar.gz
+        dest: /opt
+        remote_src: true
+        creates: /opt/{{ atop_version }}
+
+    - name: Build atop
+      ansible.builtin.shell: |
+        pushd /opt/{{ atop_version }}
+        make
+        popd
+      args:
+        executable: /bin/bash
+        creates: /opt/{{ atop_version }}/atop
+
+    - name: Install atop
+      ansible.builtin.shell: |
+        pushd /opt/{{ atop_version }}
+        make install
+        touch /opt/{{ atop_version }}/.installed
+        popd
+      args:
+        executable: /bin/bash
+        creates: /opt/{{ atop_version }}/.installed
+
+    - name: Enable and start atop
+      ansible.builtin.systemd:
+        state: started
+        name: atop
+        enabled: true
+        daemon_reload: true
+
+

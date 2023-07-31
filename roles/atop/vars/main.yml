@@ -1,0 +1,4 @@
+---
+netatop_enabled: true
+netatop_version: netatop-3.1
+atop_version: atop-2.9.0
