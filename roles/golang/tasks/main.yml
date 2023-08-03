@@ -28,6 +28,12 @@
         dest: /opt/go
         state: link
 
+    - name: Create a symlink for current go in local lib
+      ansible.builtin.file:
+        src: /opt/go/bin/go
+        dest: /usr/local/bin/go
+        state: link
+
     - name: Add go to the path
       ansible.builtin.lineinfile:
         path: /etc/bash.bashrc
