@@ -1,0 +1,27 @@
+---
+- name: Install Polygon CLI
+  block:
+    - name: Clone Polycli
+      ansible.builtin.git:
+        repo: https://github.com/maticnetwork/polygon-cli.git
+        dest: /opt/polygon-cli
+        version: "{{ polygon_cli_version }}"
+        recursive: true
+
+    - name: Build polycli
+      ansible.builtin.shell: |
+        pushd /opt/polygon-cli
+        make clean
+        make build
+        popd
+      args:
+        executable: /bin/bash
+        creates: /opt/polygon-cli/out/polycli
+
+    - name: Install polycli to local bin
+      ansible.builtin.copy:
+        src: /opt/polygon-cli/out/polycli
+        dest: /usr/local/bin/polycli
+        mode: "0755"
+        remote_src: true
+

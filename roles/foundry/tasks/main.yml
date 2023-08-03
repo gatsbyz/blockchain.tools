@@ -1,0 +1,13 @@
+---
+- name: Install foundryup
+  ansible.builtin.shell: curl -L https://foundry.paradigm.xyz | bash
+  args:
+    creates: /root/.foundry/bin/foundryup
+
+- name: Install cast
+  ansible.builtin.shell: |
+    /root/.foundry/bin/foundryup
+    cp /root/.foundry/bin/* /usr/local/bin
+  args:
+    creates: /usr/local/bin/cast
+
