@@ -1,0 +1,33 @@
+---
+
+- name: Install Golang
+  block:
+    - name: Create directory for go {{ go_version }}
+      ansible.builtin.file:
+        path: /opt/go-{{ go_version }}
+        state: directory
+        owner: root
+        group: root
+
+    - name: Download go {{ go_version }}
+      ansible.builtin.get_url:
+        url: https://go.dev/dl/go{{ go_version }}.linux-amd64.tar.gz
+        dest: /opt/go{{ go_version }}.tar.gz
+        mode: "0644"
+
+    - name: Extract go {{ go_version }} binary
+      ansible.builtin.unarchive:
+        src: /opt/go{{ go_version }}.tar.gz
+        dest: /opt/go-{{ go_version }}
+        creates: /opt/go-{{ go_version }}/go
+
+    - name: Create a symlink for current go
+      ansible.builtin.file:
+        src: /opt/go-{{ go_version }}/go
+        dest: /opt/go
+        state: link
+
+    - name: Add go to the path
+      ansible.builtin.lineinfile:
+        path: /etc/bash.bashrc
+        line: export PATH=$PATH:/opt/go/bin
