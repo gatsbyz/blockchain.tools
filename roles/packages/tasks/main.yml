@@ -13,6 +13,7 @@
       - gdb
       - git
       - gnupg
+      - gnuplot
       - hdparm
       - htop
       - inxi
@@ -21,6 +22,7 @@
       - lmbench
       - lsof
       - make
+      - miller
       - ncdu
       - net-tools
       - numactl

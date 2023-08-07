@@ -5,6 +5,8 @@
   ansible.builtin.apt:
     pkg:
       - gcc-12
+      - gnuplot
+      - miller
     state: present
     update_cache: true
 
@@ -91,4 +93,9 @@
         enabled: true
         daemon_reload: true
 
+- name: Create ATOP script for drawing graphs
+  ansible.builtin.template:
+    src: dash.sh
+    dest: /usr/local/bin/atop-dash.sh
+    mode: "0755"
 
