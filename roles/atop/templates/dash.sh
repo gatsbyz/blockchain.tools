@@ -66,7 +66,7 @@ create_multi_plot() {
 
     echo "timestamp	value	group" > $data_file
     jq -r '.timestamp as $ts | .'"$family"'[] | [$ts, .'"$metric"', "'"$group"'-" + (.'"$group"' | tostring)] | @tsv' array-values.data.json >> $data_file
-    
+
     mlr --tsv reshape -s group,value then unsparsify then reorder -e -f CLEARED $data_file > $data_file.pivot
     local col_count="$(cat $data_file | awk '{print $3}' | sort -u | grep -v group | wc -l)"
 
@@ -78,13 +78,15 @@ main() {
     pushd "$work_dir" || exit 1
 
     atop -r "/var/log/atop/atop_$(date -d '24 hours ago' '+%Y%m%d')" -b "$(date -d '24 hours ago' '+%Y%m%d%H%M')" -e "$(date '+%Y%m%d%H%M')" -JALL > raw.data.json
-    atop -r "/var/log/atop/atop_$(date '+%Y%m%d')" -b "$(date -d '24 hours ago' '+%Y%m%d%H%M')" -e "$(date '+%Y%m%d%H%M')" -JALL >> raw.data.json
+    atop -r "/var/log/atop/atop_$(date '+%Y%m%d')" -JALL >> raw.data.json
 
-    jq '. | del(.PRG, .PRC, .PRM, .PRD)' raw.data.json > no-proc.data.json
+    # atop sometimes includes aggregated metrics at the start
+    # we're going to specify that we're only looking at the 600 second samples
+    jq '. | del(.PRG, .PRC, .PRM, .PRD) | select(.elapsed == 600)' raw.data.json > no-proc.data.json
     rm raw.data.json
+
     jq '. | {host:.host, timestamp:.timestamp, elapsed:.elapsed, CPU:.CPU, CPL:.CPL, MEM:.MEM, SWP:.SWP, PAG:.PAG, PSI:.PSI, NFC:.NFC, NFS:.NFS, NET_GENERAL:.NET_GENERAL}' no-proc.data.json > single-values.data.json
     jq '. | {host:.host, timestamp:.timestamp, elapsed:.elapsed, cpu:.cpu, LVM:.LVM, MDD:.MDD, DSK:.DSK, NET:.NET, NUM:.NUM}' no-proc.data.json > array-values.data.json
-
 
     create_single_plot "CPU" "nrcpu" "Number of CPUs" "The total number of CPUs in the system"
 
@@ -97,57 +99,57 @@ main() {
     cpu_utime_desc="Time the CPU spent in user mode (e.g., user applications)."
     create_single_plot "CPU" "utime" "$cpu_utime_title" "$cpu_utime_desc"
     create_multi_plot "cpu" "cpuid" "utime" "$cpu_utime_title" "$cpu_utime_desc"
-    
+
     cpu_ntime_title="Niced User Tasks Time"
     cpu_ntime_desc="Time the CPU spent processing niced (lower-priority) user tasks."
     create_single_plot "CPU" "ntime" "$cpu_ntime_title" "$cpu_ntime_desc"
     create_multi_plot "cpu" "cpuid" "ntime" "$cpu_ntime_title" "$cpu_ntime_desc"
-    
+
     cpu_itime_title="Idle Time"
     cpu_itime_desc="Time the CPU was idle and not executing any tasks."
     create_single_plot "CPU" "itime" "$cpu_itime_title" "$cpu_itime_desc"
     create_multi_plot "cpu" "cpuid" "itime" "$cpu_itime_title" "$cpu_itime_desc"
-    
+
     cpu_wtime_title="I/O Wait Time"
     cpu_wtime_desc="Time the CPU was waiting for I/O operations to complete."
     create_single_plot "CPU" "wtime" "$cpu_wtime_title" "$cpu_wtime_desc"
     create_multi_plot "cpu" "cpuid" "wtime" "$cpu_wtime_title" "$cpu_wtime_desc"
-    
+
     cpu_Itime_title="Hardware Interrupts Time"
     cpu_Itime_desc="Time the CPU spent handling hardware interrupts."
     create_single_plot "CPU" "Itime" "$cpu_Itime_title" "$cpu_Itime_desc"
     create_multi_plot "cpu" "cpuid" "Itime" "$cpu_Itime_title" "$cpu_Itime_desc"
-    
+
     cpu_Stime_title="Software Interrupts Time"
     cpu_Stime_desc="Time the CPU spent handling software interrupts."
     create_single_plot "CPU" "Stime" "$cpu_Stime_title" "$cpu_Stime_desc"
     create_multi_plot "cpu" "cpuid" "Stime" "$cpu_Stime_title" "$cpu_Stime_desc"
-    
+
     cpu_steal_title="Steal Time"
     cpu_steal_desc="Time 'stolen' from this VM by the hypervisor for other tasks (relevant in virtualized environments)."
     create_single_plot "CPU" "steal" "$cpu_steal_title" "$cpu_steal_desc"
     create_multi_plot "cpu" "cpuid" "steal" "$cpu_steal_title" "$cpu_steal_desc"
-    
+
     cpu_guest_title="Guest Time"
     cpu_guest_desc="Time the CPU spent running a virtual CPU for guest OSes (under hypervisors)."
     create_single_plot "CPU" "guest" "$cpu_guest_title" "$cpu_guest_desc"
     create_multi_plot "cpu" "cpuid" "guest" "$cpu_guest_title" "$cpu_guest_desc"
-    
+
     cpu_freq_title="CPU Frequency"
     cpu_freq_desc="The operating frequency over the CPU overall"
     create_single_plot "CPU" "freq" "$cpu_freq_title" "$cpu_freq_desc"
     create_multi_plot "cpu" "cpuid" "freq" "$cpu_freq_title" "$cpu_freq_desc"
-    
+
     cpu_freqperc_title="CPU Percent Frequency"
     cpu_freqperc_desc="The frequency of the CPU relative to the max frequency"
     create_single_plot "CPU" "freqperc" "$cpu_freqperc_title" "$cpu_freqperc_desc"
     create_multi_plot "cpu" "cpuid" "freqperc" "$cpu_freqperc_title" "$cpu_freqperc_desc"
-    
+
     cpu_instr_title="CPU Instructions"
     cpu_instr_desc="Total number of CPU instructions executed."
     create_single_plot "CPU" "instr" "$cpu_instr_title" "$cpu_instr_desc"
     create_multi_plot "cpu" "cpuid" "stime" "instr" "$cpu_instr_title" "$cpu_instr_desc"
-    
+
     cpu_cycle_title="CPU Cycles"
     cpu_cycle_desc="Total number of CPU cycles used."
     create_single_plot "CPU" "cycle" "$cpu_cycle_title" "$cpu_cycle_desc"
