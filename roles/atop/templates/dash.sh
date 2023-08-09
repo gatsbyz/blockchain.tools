@@ -14,11 +14,12 @@ set xdata time;
 set timefmt '%s';
 set format x '%Y-%m-%d %H:%M:%S';
 set xtics 10800;
-set title \"$title\n{/*0.5 $subtitle}\";
+set title \"[$(hostname)] $title\n{/*0.5 $subtitle}\";
 set xlabel 'Timestamp';
 set ylabel '$value_label';
 plot '$data_file' using 1:2 with lines title '';"
 }
+
 render_multi_plot() {
     local data_file="$1"
     local title="$2"
@@ -34,7 +35,7 @@ set xdata time;
 set timefmt '%s';
 set format x '%Y-%m-%d %H:%M:%S';
 set xtics 10800;
-set title \"$title\n{/*0.5 $subtitle}\";
+set title \"[$(hostname)] $title\n{/*0.5 $subtitle}\";
 set xlabel 'Timestamp';
 set ylabel '$value_label';
 plot for [i=2:$col_count] '$data_file' using 1:i with lines title columnhead(i);"
@@ -49,8 +50,8 @@ create_single_plot() {
     local subtitle="$4"
     local value_label="$2"
 
-    echo "timestamp	value" > $data_file
-    jq -r '[.timestamp, '"$selector"'] | @tsv' single-values.data.json >> $data_file
+    echo "timestamp	value" > "$data_file"
+    jq -r '[.timestamp, '"$selector"'] | @tsv' single-values.data.json >> "$data_file"
 
     render_single_plot "$data_file" "$title" "$subtitle" "$value_label"
 }
@@ -63,12 +64,13 @@ create_multi_plot() {
     local title="$4"
     local subtitle="$5"
     local value_label="$3"
+    local col_count
 
-    echo "timestamp	value	group" > $data_file
-    jq -r '.timestamp as $ts | .'"$family"'[] | [$ts, .'"$metric"', "'"$group"'-" + (.'"$group"' | tostring)] | @tsv' array-values.data.json >> $data_file
+    echo "timestamp	value	group" > "$data_file"
+    jq -r '.timestamp as $ts | .'"$family"'[] | [$ts, .'"$metric"', "'"$group"'-" + (.'"$group"' | tostring)] | @tsv' array-values.data.json >> "$data_file"
 
-    mlr --tsv reshape -s group,value then unsparsify then reorder -e -f CLEARED $data_file > $data_file.pivot
-    local col_count="$(cat $data_file | awk '{print $3}' | sort -u | grep -v group | wc -l)"
+    mlr --tsv reshape -s group,value then unsparsify then reorder -e -f CLEARED "$data_file" > "$data_file.pivot"
+    col_count="$(cat $data_file | awk '{print $3}' | sort -u | grep -v group | wc -l)"
 
     render_multi_plot "$data_file.pivot" "$title" "$subtitle" "$value_label" "$col_count"
 }
@@ -281,6 +283,8 @@ main() {
     find . -type f -name '*.png' | sort | awk 'BEGIN {print "<ul>"} {print "<li><a href=\"" $0 "\">" $0 "</a></li>"} END {print "</ul>"}' > index.html
 
     popd || exit 1
+
+    mv "$work_dir" "atop-dash-$(date +%s)"
 }
 
 main
