@@ -7,6 +7,7 @@
       - gcc-12
       - gnuplot
       - miller
+      - libncurses5-dev
     state: present
     update_cache: true
 
