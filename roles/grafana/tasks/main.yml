@@ -17,9 +17,8 @@
 
     - name: Extract grafana {{ grafana_version }} binary
       ansible.builtin.unarchive:
-        src: /opt/grafana-{{ grafana_version }}.tar.gz
+        src: /opt/grafana-{{ grafana_version }}.linux-amd64.tar.gz
         dest: /opt/grafana-v{{ grafana_version }}
-        #creates: /opt/grafana-{{ grafana_version }}
         remote_src: true
 
     - name: Install Grafana binaries to local bin
