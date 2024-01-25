@@ -28,11 +28,7 @@
 
     - name: Install Grafana binaries to local bin
       ansible.builtin.copy:
-        src: /opt/grafana-v{{ grafana_version }}/bin/{{ item }}
-        dest: /usr/local/bin/{{ item }}
+        src: /opt/grafana-v{{ grafana_version }}/bin/grafana
+        dest: /usr/local/bin/grafana
         mode: "0755"
         remote_src: true
-      loop:
-        - grafana
-        - grafana-cli
-        - grafana-server
