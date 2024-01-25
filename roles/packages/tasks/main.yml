@@ -48,16 +48,11 @@
     state: present
     update_cache: true
 
-- name: Install yq
-  ansible.builtin.get_url:
-    url: https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
-    dest: /usr/bin/yq
-    mode: "0755"
-    force: yes
-
-- name: Install tomlq
+- name: Install python packages
   ansible.builtin.pip:
-    name: tomlq
+    name:
+      - tomlq
+      - yq
     executable: pip3
     state: present
 
