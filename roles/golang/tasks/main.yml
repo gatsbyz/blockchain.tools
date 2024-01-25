@@ -38,3 +38,10 @@
       ansible.builtin.lineinfile:
         path: /etc/bash.bashrc
         line: export PATH=$PATH:/opt/go/bin
+
+- name: Install dlv
+  ansible.builtin.shell:
+    cmd: go install github.com/go-delve/delve/cmd/dlv@{{ dlv_version }}
+  args:
+    executable: /bin/bash
+    creates: "{{ ansible_env.GOBIN }}/dlv"
