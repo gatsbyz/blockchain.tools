@@ -22,6 +22,11 @@
         creates: /opt/go-{{ go_version }}/go
         remote_src: true
 
+    - name: Clean up
+      ansible.builtin.file:
+        path: /opt/go{{ go_version }}.tar.gz
+        state: absent
+
     - name: Create a symlink for current go
       ansible.builtin.file:
         src: /opt/go-{{ go_version }}/go
