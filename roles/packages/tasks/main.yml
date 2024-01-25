@@ -48,6 +48,19 @@
     state: present
     update_cache: true
 
+- name: Install yq
+  ansible.builtin.get_url:
+    url: https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+    dest: /usr/bin/yq
+    mode: "0755"
+    force: yes
+
+- name: Install tomlq
+  ansible.builtin.pip:
+    name: tomlq
+    executable: pip3
+    state: present
+
 - name: Systemwide emacs setup
   block:
     - name: Emacs with no window by default
