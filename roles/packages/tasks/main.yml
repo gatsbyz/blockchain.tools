@@ -48,7 +48,15 @@
     state: present
     update_cache: true
 
-- name: systemwide emacs setup
+- name: Install python packages
+  ansible.builtin.pip:
+    name:
+      - tomlq
+      - yq
+    executable: pip3
+    state: present
+
+- name: Systemwide emacs setup
   block:
     - name: Emacs with no window by default
       ansible.builtin.lineinfile:
@@ -72,4 +80,3 @@
       ansible.builtin.lineinfile:
         path: "/etc/bash.bashrc"
         line: "[[ $- = *i* ]] && source /usr/local/share/liquidprompt/liquidprompt"
-
