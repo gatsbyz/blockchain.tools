@@ -1,0 +1,34 @@
+---
+
+- name: Install Grafana
+  block:
+    - name: Create directory for grafana {{ grafana_version }}
+      ansible.builtin.file:
+        path: /opt/grafana-v{{ grafana_version }}
+        state: directory
+        owner: root
+        group: root
+
+    - name: Download grafana {{ grafana_version }}
+      ansible.builtin.get_url:
+        url: https://dl.grafana.com/oss/release/grafana-{{ grafana_version }}.linux-amd64.tar.gz
+        dest: /opt/grafana-{{ grafana_version }}.linux-amd64.tar.gz
+        mode: "0644"
+
+    - name: Extract grafana {{ grafana_version }} binary
+      ansible.builtin.unarchive:
+        src: /opt/grafana-{{ grafana_version }}.tar.gz
+        dest: /opt/grafana-v{{ grafana_version }}
+        #creates: /opt/grafana-{{ grafana_version }}
+        remote_src: true
+
+    - name: Install Grafana binaries to local bin
+      ansible.builtin.copy:
+        src: /opt/grafana-v{{ grafana_version }}/bin/{{ item }}
+        dest: /usr/local/bin/{{ item }}
+        mode: "0755"
+        remote_src: true
+      loop:
+        - grafana
+        - grafana-cli
+        - grafana-server
