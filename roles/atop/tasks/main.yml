@@ -8,6 +8,7 @@
       - gnuplot
       - miller
       - libncurses5-dev
+      - libglib2.0-0
     state: present
     update_cache: true
 
