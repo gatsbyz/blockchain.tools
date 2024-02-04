@@ -9,6 +9,7 @@
       - miller
       - libncurses5-dev
       - libglib2.0-0
+      - libglib2.0-dev
     state: present
     update_cache: true
 
