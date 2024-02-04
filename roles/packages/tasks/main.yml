@@ -16,6 +16,7 @@
       - gnuplot
       - hdparm
       - htop
+      - hwloc
       - inxi
       - iperf
       - jq
