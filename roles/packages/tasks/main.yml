@@ -69,6 +69,11 @@
         path: /etc/bash.bashrc
         line: export EDITOR=emacs
 
+    - name: Copy defaults for melpa support
+      ansible.builtin.copy:
+        src: default.el
+        dest: /etc/emacs/default.el
+
 - name: Setup liquid prompt
   block:
     - name: Clone liquidprompt
