@@ -49,14 +49,6 @@
     state: present
     update_cache: true
 
-- name: Install python packages
-  ansible.builtin.pip:
-    name:
-      - tomlq
-      - yq
-    executable: pip3
-    state: present
-
 - name: Systemwide emacs setup
   block:
     - name: Emacs with no window by default
