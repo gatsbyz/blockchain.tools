@@ -1,0 +1,13 @@
+---
+- name: Setup liquid prompt
+  block:
+    - name: Clone liquidprompt
+      ansible.builtin.git:
+        repo: https://github.com/nojhan/liquidprompt.git
+        dest: /usr/local/share/liquidprompt
+        recursive: true
+
+    - name: Use liquid prompt for current user
+      ansible.builtin.lineinfile:
+        path: "/etc/bash.bashrc"
+        line: "[[ $- = *i* ]] && source /usr/local/share/liquidprompt/liquidprompt"
